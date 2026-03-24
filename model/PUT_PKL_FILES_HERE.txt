@@ -1,0 +1,9 @@
+Place your .pkl files here:
+
+  heart_model.pkl
+  heart_model_v2.pkl
+  scaler.pkl
+  scaler_v2.pkl
+  features_v2.pkl
+
+Copy them from your original project's model/ folder.
