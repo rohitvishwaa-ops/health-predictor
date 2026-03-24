@@ -1,0 +1,10 @@
+{
+  "rewrites": [
+    { "source": "/auth/:path*", "destination": "/api/auth/:path*" },
+    { "source": "/predict/:path*", "destination": "/api/predict/:path*" },
+    { "source": "/history/:path*", "destination": "/api/history/:path*" },
+    { "source": "/features", "destination": "/api/features" },
+    { "source": "/health", "destination": "/api/health" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}

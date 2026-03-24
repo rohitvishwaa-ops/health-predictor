@@ -1,0 +1,7 @@
+{
+  "name": "vitalai-vercel-root",
+  "private": true,
+  "scripts": {
+    "build": "npm --prefix frontend install && npm --prefix frontend run build && node scripts/prepare-vercel.mjs"
+  }
+}
