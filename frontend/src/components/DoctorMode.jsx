@@ -12,7 +12,7 @@ function getRangeStyle(value, min, max) {
   };
 }
 
-export default function DoctorMode({ onResult, onLoading }) {
+export default function DoctorMode({ onResult, onLoading, hasResult, onDownload }) {
   const [f, setF] = useState(INIT);
   const set = (key, value) => setF(prev => ({ ...prev, [key]: value }));
 
@@ -184,7 +184,14 @@ export default function DoctorMode({ onResult, onLoading }) {
         </div>
       </div>
 
-      <button type="submit" className="submit-btn">Run Prediction</button>
+      <div style={{ display: "flex", gap: "12px", marginTop: "16px" }}>
+        <button type="submit" className="submit-btn" style={{ flex: 1 }}>Run Prediction</button>
+        {hasResult && (
+          <button type="button" className="submit-btn" style={{ flex: 1 }} onClick={(e) => onDownload(e)}>
+            Download Report ↓
+          </button>
+        )}
+      </div>
     </form>
   );
 }

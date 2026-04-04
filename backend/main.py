@@ -32,7 +32,7 @@ USERS_FILE = os.path.join(DATA_DIR, "users.json")
 CHOL_NEUTRAL_DEFAULT = 200
 RESTECG_TO_SLOPE = {0: 2, 1: 1, 2: 0}
 
-_tokens: dict[str, str] = {}
+# Tokens are now stored in USERS_FILE for persistence
 security = HTTPBearer(auto_error=False)
 
 
@@ -58,10 +58,11 @@ def hash_pw(p: str) -> str:
 def get_current_user(creds: Optional[HTTPAuthorizationCredentials] = Depends(security)):
     if not creds:
         raise HTTPException(401, "Not authenticated")
-    username = _tokens.get(creds.credentials)
-    if not username:
-        raise HTTPException(401, "Invalid or expired token")
-    return username
+    users = load_users()
+    for username, user_data in users.items():
+        if user_data.get("token") == creds.credentials:
+            return username
+    raise HTTPException(401, "Invalid or expired token")
 
 
 def derive_st_slope(restecg: int) -> int:
@@ -130,14 +131,20 @@ def login(req: LoginIn):
     if not user or user["password"] != hash_pw(req.password):
         raise HTTPException(401, "Invalid username or password")
     token = secrets.token_hex(32)
-    _tokens[token] = req.username
+    users[req.username]["token"] = token
+    save_users(users)
     return {"token": token, "username": req.username, "name": user["name"]}
 
 
 @app.post("/auth/logout")
 def logout(creds: Optional[HTTPAuthorizationCredentials] = Depends(security)):
-    if creds and creds.credentials in _tokens:
-        del _tokens[creds.credentials]
+    if creds:
+        users = load_users()
+        for username, user_data in users.items():
+            if user_data.get("token") == creds.credentials:
+                user_data["token"] = None
+                save_users(users)
+                break
     return {"message": "Logged out"}
 
 
@@ -248,8 +255,8 @@ def predict_patient_route(req: PatientPredictIn, username: str = Depends(get_cur
             else [round(nc, 1), round(100 - nc, 1)]
         )
 
-    save_record(username, inp, res, extra)
-    return {"result": res, "inputs": inp, "extra": extra}
+    save_record(username, req.model_dump(), res, extra)
+    return {"result": res, "inputs": req.model_dump(), "extra": extra}
 
 
 @app.post("/predict/batch")

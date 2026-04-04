@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import AuthPage from "./pages/AuthPage";
 import Dashboard from "./pages/Dashboard";
 import "./styles/global.css";
+import "./styles/theme-fixes.css";
 
 export default function App() {
   const [theme, setTheme] = useState(() => localStorage.getItem("vitalai-theme") || "dark");

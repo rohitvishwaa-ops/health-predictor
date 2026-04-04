@@ -1,8 +1,10 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import GridScanBackground from "../components/GridScanBackground";
+import { FallingPattern } from "../components/ui/falling-pattern";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../services/api";
+import CycleStatusButton from "../components/ui/status-cycle-button";
 
 export default function AuthPage({ themeToggle }) {
   const { login } = useAuth();
@@ -45,6 +47,16 @@ export default function AuthPage({ themeToggle }) {
 
   return (
     <motion.div className="auth-bg" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6 }}>
+      <div className="auth-pattern-layer" aria-hidden="true">
+        <FallingPattern
+          className="auth-pattern"
+          color="rgba(127, 200, 255, 0.82)"
+          backgroundColor="transparent"
+          duration={170}
+          blurIntensity="0.8em"
+          density={1.1}
+        />
+      </div>
       <GridScanBackground />
       <div className="auth-glow g1" />
       <div className="auth-glow g2" />
@@ -157,15 +169,29 @@ export default function AuthPage({ themeToggle }) {
             )}
           </AnimatePresence>
 
-          <motion.button type="submit" className="auth-btn auth-btn-premium" disabled={busy} whileHover={{ y: -2 }} whileTap={{ scale: 0.99 }}>
+          <CycleStatusButton
+            type="submit"
+            className="auth-btn auth-btn-premium"
+            disabled={busy}
+            cycleInterval={3500}
+            statuses={
+              busy
+                ? mode === "login"
+                  ? ["Authenticating", "Verifying Info", "Securing Session"]
+                  : ["Creating Profile", "Allocating Space", "Finalizing"]
+                : mode === "login"
+                  ? ["Sign In", "Secure Access", "Enter Workspace"]
+                  : ["Create Account", "Join VitalAI", "Start Analysis"]
+            }
+          >
             <span className="auth-btn-sheen" />
             <span className="auth-btn-text">
               {mode === "login" ? "Secure Access" : "Create Account"}
             </span>
-            <span className="auth-btn-content">
-              {busy ? <span className="spin" /> : mode === "login" ? "Sign In" : "Create Account"}
-            </span>
-          </motion.button>
+            {busy && (
+              <span className="spin" style={{ position: "absolute", left: "20px" }} />
+            )}
+          </CycleStatusButton>
         </form>
 
         {mode === "login" && (

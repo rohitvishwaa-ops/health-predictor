@@ -72,7 +72,7 @@ function ManualNumberField({
   );
 }
 
-export default function PatientMode({ onResult, onLoading }) {
+export default function PatientMode({ onResult, onLoading, hasResult, onDownload }) {
   const [f, setF] = useState(INIT);
 
   const set = (key, value) => setF(prev => ({ ...prev, [key]: value }));
@@ -341,7 +341,14 @@ export default function PatientMode({ onResult, onLoading }) {
         </div>
       </motion.section>
 
-      <button type="submit" className="submit-btn">Check My Heart Health</button>
+      <div style={{ display: "flex", gap: "12px", marginTop: "16px" }}>
+        <button type="submit" className="submit-btn" style={{ flex: 1 }}>Check My Heart Health</button>
+        {hasResult && (
+          <button type="button" className="submit-btn" style={{ flex: 1 }} onClick={(e) => onDownload(e)}>
+            Download Report ↓
+          </button>
+        )}
+      </div>
     </form>
   );
 }

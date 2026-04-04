@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import DoctorMode from "../components/DoctorMode";
 import PatientMode from "../components/PatientMode";
 import ResultPanel from "../components/ResultPanel";
+import { generateClinicalReport } from "../utils/pdfReport";
 import BatchTab from "../components/BatchTab";
 import HistoryTab from "../components/HistoryTab";
 
@@ -59,7 +60,16 @@ export default function Dashboard({ themeToggle }) {
         <div className="nav-brand-wrap">
           <div className="nav-brand-mark">VA</div>
           <div>
-            <div className="nav-brand">Vital<span>AI</span></div>
+            <div className="nav-brand" style={{ display: "flex", gap: "1px" }}>
+              {"Vital".split("").map((char, index) => (
+                <motion.span key={`v-${index}`} animate={{ y: [0, -4, 0] }} transition={{ duration: 1.8, repeat: Infinity, delay: index * 0.12, ease: "easeInOut" }}>{char}</motion.span>
+              ))}
+              <span style={{ display: "flex", gap: "1px" }}>
+                {"AI".split("").map((char, index) => (
+                  <motion.span key={`a-${index}`} animate={{ y: [0, -4, 0] }} transition={{ duration: 1.8, repeat: Infinity, delay: ("Vital".length + index) * 0.12, ease: "easeInOut" }}>{char}</motion.span>
+                ))}
+              </span>
+            </div>
             <div className="nav-brand-sub">Clinical-grade heart risk screening workspace</div>
           </div>
         </div>
@@ -162,8 +172,8 @@ export default function Dashboard({ themeToggle }) {
 
                 <motion.div className="content-card" variants={revealBlock}>
                   {mode === "doctor"
-                    ? <DoctorMode onResult={onResult} onLoading={setLoading} />
-                    : <PatientMode onResult={onResult} onLoading={setLoading} />}
+                    ? <DoctorMode onResult={onResult} onLoading={setLoading} hasResult={!!result} onDownload={(e) => { e.preventDefault(); generateClinicalReport(result.res, result.inputs, result.extra, user); }} />
+                    : <PatientMode onResult={onResult} onLoading={setLoading} hasResult={!!result} onDownload={(e) => { e.preventDefault(); generateClinicalReport(result.res, result.inputs, result.extra, user); }} />}
                 </motion.div>
 
                 <div id="result-anchor" />

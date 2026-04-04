@@ -1,6 +1,8 @@
 import { motion, useInView } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { checkStressTestNeeded, buildAlerts, getBoundaryWarnings } from "../hooks/useAnalysis";
+import { useAuth } from "../context/AuthContext";
+import { generateClinicalReport } from "../utils/pdfReport";
 
 function CountUp({ value, suffix = "", decimals = 0, duration = 900, className, style }) {
   const [displayValue, setDisplayValue] = useState(0);
@@ -64,7 +66,7 @@ function Gauge({ value, color }) {
       <path
         d={`M ${cx + r * Math.cos(startAngle)} ${cy + r * Math.sin(startAngle)} A ${r} ${r} 0 1 1 ${cx + r * Math.cos(startAngle + Math.PI * 1.5)} ${cy + r * Math.sin(startAngle + Math.PI * 1.5)}`}
         fill="none"
-        stroke="#203145"
+        stroke="var(--border-strong)"
         strokeWidth="14"
         strokeLinecap="round"
       />
@@ -81,8 +83,8 @@ function Gauge({ value, color }) {
           transition={{ duration: 1.1, ease: "easeInOut" }}
         />
       )}
-      <text x={cx} y={cy + 10} textAnchor="middle" fill="#f7fbff" fontSize="22" fontWeight="700">{value}%</text>
-      <text x={cx} y={cy + 32} textAnchor="middle" fill="#7e92aa" fontSize="10">Confidence Score</text>
+      <text x={cx} y={cy + 10} textAnchor="middle" fill="var(--text)" fontSize="22" fontWeight="700">{value}%</text>
+      <text x={cx} y={cy + 32} textAnchor="middle" fill="var(--text-muted)" fontSize="10">Confidence Score</text>
     </motion.svg>
   );
 }
@@ -271,22 +273,6 @@ function ECGWaveform({ pqrst, extra, inputs, result }) {
       <div className="chart-title">Live ECG Stream</div>
       <svg viewBox={`0 0 ${width} ${height}`} className="ecg-svg">
         <defs>
-          <filter id="ecg-neon-glow" x="-30%" y="-80%" width="160%" height="260%">
-            <feGaussianBlur stdDeviation="3.2" result="blur" />
-            <feColorMatrix
-              in="blur"
-              type="matrix"
-              values="1 0 0 0 0
-                      0 1 0 0 0
-                      0 0 1 0 0
-                      0 0 0 1 0"
-              result="glow"
-            />
-            <feMerge>
-              <feMergeNode in="glow" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
           <linearGradient id="ecg-scan-fill" x1="0" y1="0" x2="1" y2="0">
             <stop offset="0%" stopColor="transparent" />
             <stop offset="45%" stopColor={waveGlow} />
@@ -326,11 +312,10 @@ function ECGWaveform({ pqrst, extra, inputs, result }) {
                 d={pathData}
                 fill="none"
                 stroke={waveGlow}
-                strokeWidth="9"
+                strokeWidth="7"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                opacity="0.22"
-                filter="url(#ecg-neon-glow)"
+                opacity="0.25"
               />
               <path
                 d={pathData}
@@ -339,7 +324,6 @@ function ECGWaveform({ pqrst, extra, inputs, result }) {
                 strokeWidth="3"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                filter="url(#ecg-neon-glow)"
               />
             </g>
           ))}
@@ -381,7 +365,7 @@ function ECGIntervalChart({ pqrst }) {
           return (
             <div key={key} className="interval-row">
               <span className="int-label">{label}</span>
-              <div className="int-track">
+              <div className="int-track" style={{ minHeight: "14px", height: "14px" }}>
                 <div className="int-normal" style={{ width: `${(high / maxValue) * 100}%` }} />
                 <div className="int-value" style={{ width: `${(value / maxValue) * 100}%`, background: color }} />
               </div>
@@ -408,16 +392,17 @@ const FEATURE_LABELS_PATIENT = {
 };
 
 const SEVERITY_CONFIG = {
-  mild: { color: "#7fc8ff", label: "Mild" },
-  moderate: { color: "#ffcf5a", label: "Moderate" },
-  significant: { color: "#ff7b72", label: "Significant" },
+  mild: { color: "var(--primary-strong)", label: "Mild" },
+  moderate: { color: "var(--warning)", label: "Moderate" },
+  significant: { color: "var(--danger)", label: "Significant" },
 };
 
 export default function ResultPanel({ result, inputs, extra, modelUsed }) {
+  const { user } = useAuth();
   if (!result) return null;
 
   const danger = result.prediction === 1;
-  const color = danger ? "#ff7b72" : "#63d7ab";
+  const color = danger ? "var(--danger)" : "var(--success)";
   const confidence = result.confidence;
   const pqrst = extra?.pqrst || {};
   const labels = modelUsed === "patient" ? FEATURE_LABELS_PATIENT : FEATURE_LABELS;

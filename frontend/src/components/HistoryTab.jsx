@@ -67,10 +67,10 @@ export default function HistoryTab() {
         <>
           <div className="batch-pills history-pills">
             {[
-              ["Saved Cases", history.length, "#f4f7fb"],
-              ["High Risk", flaggedCount, "#ff7b72"],
-              ["Low Risk", lowRiskCount, "#63d7ab"],
-              ["Avg Confidence", `${avgConfidence}%`, "#7fc8ff"],
+              ["Saved Cases", history.length, "var(--text)"],
+              ["High Risk", flaggedCount, "var(--danger)"],
+              ["Low Risk", lowRiskCount, "var(--success)"],
+              ["Avg Confidence", `${avgConfidence}%`, "var(--primary)"],
             ].map(([label, value, color]) => (
               <motion.div key={label} className="metric-pill metric-pill-elevated" whileHover={{ y: -4 }} transition={{ duration: 0.18 }}>
                 <div className="mp-label">{label}</div>
@@ -96,7 +96,7 @@ export default function HistoryTab() {
                   whileHover={{ y: -3 }}
                 >
                   <div>
-                    <div className="hist-diag" style={{ color: danger ? "#ff7b72" : "#63d7ab" }}>
+                    <div className="hist-diag" style={{ color: danger ? "var(--danger)" : "var(--success)" }}>
                       {entry.diagnosis}
                     </div>
                     <div className="hist-meta">{entry.timestamp} · {entry.confidence}% confidence</div>
